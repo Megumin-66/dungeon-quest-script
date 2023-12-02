@@ -1,0 +1,71 @@
+--ScriSI-028
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Função para lidar com o clique do botão "Kill All" no UI
+local function onKillAllClicked()
+    for _, npc in ipairs(game.Workspace:GetChildren()) do
+        if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc.Humanoid.Health > 0 then
+            humanoid:LoadAnimation(script.Animation):Play() -- Play the attack animation
+            npc.Humanoid:TakeDamage(npc.Humanoid.MaxHealth) -- Deal damage equal to NPC's max health to the NPC
+        end
+    end
+end
+
+-- Função para lidar com o clique do botão "Toggle Kill Aura" no UI
+local function onToggleKillAuraClicked(state)
+    script.KillAura.Enabled = state
+end
+
+-- Função para lidar com o clique do botão "Toggle Auto-Dodge" no UI
+local function onToggleAutoDodgeClicked(state)
+    script.AutoDodge.Enabled = state
+end
+
+-- Criação da UI
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/7yhx/kwargs_Ui_Library/main/source.lua"))()
+local UI = Lib:Create{
+    Theme = "Dark",
+    Size = UDim2.new(0, 300, 0, 200)
+}
+
+local Main = UI:Tab{
+    Name = "Main"
+}
+
+local Divider = Main:Divider{
+    Name = "Actions"
+}
+
+-- Adição de botões à UI
+local KillAllButton = Divider:Button{
+    Name = "Kill All",
+    Description = "Kills all NPCs in the game",
+    Callback = onKillAllClicked
+}
+
+local ToggleKillAuraButton = Divider:Toggle{
+    Name = "Toggle Kill Aura",
+    Description = "Toggle Kill Aura",
+    Callback = onToggleKillAuraClicked
+}
+
+local ToggleAutoDodgeButton = Divider:Toggle{
+    Name = "Toggle Auto-Dodge",
+    Description = "Toggle Auto-Dodge",
+    Callback = onToggleAutoDodgeClicked
+}
+
+-- Adição de eventos para interação com o ambiente
+game.Workspace.DescendantAdded:Connect(function(descendant)
+    if descendant:IsA("BasePart") then
+        descendant.Touched:Connect(onTouched)
+    end
+end)
+
+game:GetService("RunService").Heartbeat:Connect(onHeartbeat)
+
+game:GetService("UserInputService").InputBegan:Connect(onInputBegan)
